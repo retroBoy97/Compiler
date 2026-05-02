@@ -18,9 +18,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          lfs: true
 
       - name: Install uv
         uses: astral-sh/setup-uv@v6
@@ -30,10 +27,7 @@ jobs:
       - name: Generate requirements.txt
         run: uv export --no-dev --no-hashes --format requirements-txt -o requirements.txt
 
-      - name: Stage Space README
-        run: cp space.md README.md
-
-      - name: Push to Hugging Face Space
+      - name: Sync working tree to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_USERNAME: ${{ vars.HF_USERNAME }}
@@ -44,11 +38,36 @@ jobs:
             exit 1
           fi
 
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git add requirements.txt README.md
-          git commit -m "Sync from GitHub: ${GITHUB_SHA::7}" || echo "Nothing to commit"
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
 
-          git push --force \
-            "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}" \
-            HEAD:main
+          SPACE_URL="https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}"
+
+          # Clone the Space's existing history into a sibling dir
+          git clone "$SPACE_URL" /tmp/hf-space
+
+          # Mirror the current working tree onto the Space (no GitHub git
+          # history → no historical binaries leaking through)
+          rsync -a --delete \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='.venv/' \
+            --exclude='__pycache__/' \
+            --exclude='*.pyc' \
+            --exclude='.pytest_cache/' \
+            --exclude='tests/' \
+            --exclude='*.pdf' \
+            --exclude='space.md' \
+            ./ /tmp/hf-space/
+
+          # space.md carries the HF Space YAML metadata — promote it to README
+          cp space.md /tmp/hf-space/README.md
+
+          cd /tmp/hf-space
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to deploy."
+            exit 0
+          fi
+          git commit -m "Sync from GitHub: ${GITHUB_SHA::7}"
+          git push origin HEAD:main
