@@ -35,7 +35,7 @@ def build_demo() -> gr.Blocks:
             elem_classes="app-subtitle",
         )
         gr.Markdown(
-            "Kacem Mathlouthi · Mohamed Amine Haouas · Alaeddine Zaouali · Rami Kaabi",
+            "Kacem Mathlouthi · Mohamed Amine Haouas · Alaeddine Zaouali · Rami Kaabi · Oussama Kraiem",
             elem_classes="app-authors",
         )
 
