@@ -41,17 +41,32 @@ html, body, gradio-app, .gradio-container {
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
+    overflow: visible !important;
+}
+
+/* Markdown rendering wrappers must not introduce horizontal scroll
+   (HF Spaces injects overflow-x: auto on .prose, which makes headings
+   look like scrollable strips when the iframe is narrow). */
+.gradio-container .prose,
+.gradio-container .markdown,
+.gradio-container .md {
+    overflow: visible !important;
+    max-width: 100% !important;
 }
 
 /* === Header === */
 .app-header h1 {
-    font-size: 56px !important;
+    font-size: clamp(36px, 8vw, 56px) !important;
     font-weight: 600 !important;
-    letter-spacing: -2.8px !important;
+    letter-spacing: -2.4px !important;
     line-height: 1.05 !important;
     text-align: center !important;
     color: #ededed !important;
     margin: 0 0 16px 0 !important;
+    overflow: visible !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+    max-width: 100% !important;
 }
 .app-subtitle, .app-subtitle p {
     text-align: center !important;
@@ -83,12 +98,16 @@ html, body, gradio-app, .gradio-container {
     margin: 0 0 8px 0 !important;
 }
 .phase-title h2 {
-    font-size: 32px !important;
+    font-size: clamp(24px, 5vw, 32px) !important;
     font-weight: 600 !important;
-    letter-spacing: -1.28px !important;
+    letter-spacing: -1.12px !important;
     color: #ededed !important;
     line-height: 1.15 !important;
     margin: 0 0 12px 0 !important;
+    overflow: visible !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+    max-width: 100% !important;
 }
 .phase-desc p {
     color: #a3a3a3 !important;
