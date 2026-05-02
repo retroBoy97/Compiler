@@ -4,7 +4,9 @@ version = "0.1.0"
 description = "Mini compiler for the CL language — lexer, parser, semantic analyzer."
 readme = "README.md"
 requires-python = ">=3.10"
-dependencies = []
+dependencies = [
+    "gradio>=5.0",
+]
 
 [dependency-groups]
 dev = [
