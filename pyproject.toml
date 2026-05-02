@@ -1,0 +1,18 @@
+[project]
+name = "cl-compiler"
+version = "0.1.0"
+description = "Mini compiler for the CL language — lexer, parser, semantic analyzer."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    "pytest>=7.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

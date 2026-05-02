@@ -1,7 +1,4 @@
 """
-src/lexer.py — Milestone 1: Lexical Analysis
-=============================================
-
 Converts raw source text into a flat list of Token objects.
 
 Algorithm: single-pass regex-based scanner.
@@ -16,13 +13,10 @@ reference them by name (e.g. TokenType.INT) rather than magic strings.
 
 import re
 from enum import Enum, auto
-from typing import List, NamedTuple, Optional
+from typing import List, NamedTuple
 
 
-# ---------------------------------------------------------------------------
 # Token type enumeration
-# ---------------------------------------------------------------------------
-
 class TokenType(Enum):
     # --- Literals ---
     INT_LIT    = auto()   # e.g. 42
@@ -56,10 +50,7 @@ class TokenType(Enum):
     EOF        = auto()   # end of token stream
 
 
-# ---------------------------------------------------------------------------
 # Token data class
-# ---------------------------------------------------------------------------
-
 class Token(NamedTuple):
     """
     A single token produced by the lexer.
@@ -79,18 +70,13 @@ class Token(NamedTuple):
         return f"Token({self.type.name:12s}, {self.value!r:15s}, line={self.line}, col={self.col})"
 
 
-# ---------------------------------------------------------------------------
 # Lexer error
-# ---------------------------------------------------------------------------
-
 class LexerError(Exception):
     """Raised when the lexer encounters an unrecognised character."""
     pass
 
 
-# ---------------------------------------------------------------------------
 # Token patterns
-# ---------------------------------------------------------------------------
 
 # Keyword lookup table. Any IDENT that appears here is re-classified.
 KEYWORDS: dict = {
@@ -139,10 +125,7 @@ _MASTER_PATTERN = re.compile(
 )
 
 
-# ---------------------------------------------------------------------------
 # Lexer class
-# ---------------------------------------------------------------------------
-
 class Lexer:
     """
     Tokenizes a source string into a list of Token objects.

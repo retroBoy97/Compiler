@@ -1,6 +1,3 @@
-# Makes src/ a Python package.
-# Exports the public API of each milestone for convenience.
-
 from .lexer import Lexer, Token, TokenType, LexerError
 from .parser import Parser, ParseError
 from .ast_nodes import (

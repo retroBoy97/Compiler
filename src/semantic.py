@@ -1,7 +1,4 @@
 """
-src/semantic.py — Milestone 3: Semantic Analysis
-=================================================
-
 Walks the AST produced by the Parser and performs:
   1. Scope checking  — variables must be declared before use;
                        no duplicate declarations in the same scope.
@@ -32,10 +29,7 @@ class SemanticError(Exception):
     pass
 
 
-# ---------------------------------------------------------------------------
 # Symbol table
-# ---------------------------------------------------------------------------
-
 class SymbolTable:
     """
     A scoped symbol table implemented as a stack of dicts.
@@ -47,8 +41,7 @@ class SymbolTable:
     def __init__(self) -> None:
         self._scopes: list = [{}]   # start with global scope
 
-    # --- Scope management ---
-
+    # Scope management
     def push_scope(self) -> None:
         """Enter a new inner scope (e.g., a block)."""
         self._scopes.append({})
@@ -63,8 +56,7 @@ class SymbolTable:
         """Return the symbols of the current (innermost) scope."""
         return self._scopes[-1]
 
-    # --- Symbol operations ---
-
+    # Symbol operations
     def define(self, name: str, var_type: str, line: int = 0) -> None:
         """
         Declare a new variable in the current scope.
@@ -91,10 +83,7 @@ class SymbolTable:
         )
 
 
-# ---------------------------------------------------------------------------
 # Semantic analyzer
-# ---------------------------------------------------------------------------
-
 class SemanticAnalyzer:
     """
     Walks the AST and enforces semantic rules.
@@ -110,10 +99,7 @@ class SemanticAnalyzer:
         """Entry point. Analyzes the whole program."""
         self._visit(node)
 
-    # ------------------------------------------------------------------
     # Visitor dispatch
-    # ------------------------------------------------------------------
-
     def _visit(self, node: ASTNode):
         """Dispatch to the appropriate _visit_<Class> method."""
         method_name = f"_visit_{type(node).__name__}"
@@ -123,10 +109,7 @@ class SemanticAnalyzer:
     def _visit_unknown(self, node: ASTNode):
         raise SemanticError(f"No visitor defined for node type {type(node).__name__}")
 
-    # ------------------------------------------------------------------
     # Statement visitors (return None)
-    # ------------------------------------------------------------------
-
     def _visit_ProgramNode(self, node: ProgramNode) -> None:
         for stmt in node.statements:
             self._visit(stmt)
@@ -165,10 +148,7 @@ class SemanticAnalyzer:
             self._visit(stmt)
         self.global_scope.pop_scope()
 
-    # ------------------------------------------------------------------
     # Expression visitors (return type string: 'int' or 'string')
-    # ------------------------------------------------------------------
-
     def _visit_NumNode(self, node: NumNode) -> str:
         return "int"
 

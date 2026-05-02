@@ -1,7 +1,8 @@
 # Mini Compiler — CL Language (Python)
 
 A three-milestone compiler for the **CL** (Custom Language) programming language,
-built entirely in Python with no external dependencies.
+built entirely in Python with no runtime dependencies. Project metadata and the
+optional dev toolchain (pytest) are managed with [uv](https://docs.astral.sh/uv/).
 
 ## Language Features
 
@@ -27,29 +28,37 @@ string name;
 name = "Alice";
 ```
 
+## Setup
+
+```bash
+# Install uv (one-time): https://docs.astral.sh/uv/getting-started/installation/
+# Then sync the project (creates .venv and installs dev deps):
+uv sync
+```
+
 ## Running the Compiler
 
 ```bash
 # Full pipeline (lex + parse + semantic) on a source file
-python compiler.py samples/hello.cl
+uv run python compiler.py samples/hello.cl
 
 # Run only the lexer (Milestone 1)
-python compiler.py samples/hello.cl --phase lex
+uv run python compiler.py samples/hello.cl --phase lex
 
 # Run only the parser (Milestone 2)
-python compiler.py samples/hello.cl --phase parse
+uv run python compiler.py samples/hello.cl --phase parse
 
 # Run only semantic analysis (Milestone 3)
-python compiler.py samples/hello.cl --phase semantic
+uv run python compiler.py samples/hello.cl --phase semantic
 
 # Test error detection
-python compiler.py samples/errors.cl --phase semantic
+uv run python compiler.py samples/errors.cl --phase semantic
 
-# Run all unit tests (no dependencies needed)
-python -m unittest discover tests/ -v
+# Run all unit tests (stdlib unittest, no dev deps needed)
+uv run python -m unittest discover tests/ -v
 
-# Run all unit tests with pytest (optional)
-pytest tests/ -v
+# Run all unit tests with pytest
+uv run pytest tests/ -v
 ```
 
 ## Project Structure
@@ -57,7 +66,8 @@ pytest tests/ -v
 ```
 Compiler/
 ├── compiler.py          # CLI entry point — runs all phases
-├── requirements.txt
+├── pyproject.toml       # uv-managed project metadata + dev deps
+├── uv.lock              # locked dependency versions (committed)
 │
 ├── src/
 │   ├── lexer.py         # Milestone 1 — Tokenizer

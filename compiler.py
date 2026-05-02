@@ -1,5 +1,5 @@
 """
-compiler.py — Main entry point for the Mini Compiler.
+Main entry point for the Mini Compiler.
 
 Usage:
     python compiler.py <source_file> [--phase lex|parse|semantic|all]

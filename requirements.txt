@@ -1,5 +1,0 @@
-# No external runtime dependencies.
-# All compiler code uses Python stdlib only (re, sys, argparse, unittest).
-
-# Optional: nicer test output
-pytest>=7.0

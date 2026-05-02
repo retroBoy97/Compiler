@@ -5,3 +5,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# uv / virtualenv
+.venv/
+
+# Pytest
+.pytest_cache/
+

@@ -1,7 +1,4 @@
 """
-src/parser.py — Milestone 2: Syntax Analysis (Recursive Descent Parser)
-========================================================================
-
 Takes the flat token list produced by the Lexer and builds an AST.
 
 Every grammar rule is a method. The method either:
@@ -54,10 +51,7 @@ class Parser:
         self.tokens = tokens
         self.pos = 0   # index of the current (not yet consumed) token
 
-    # ------------------------------------------------------------------
     # Helper utilities
-    # ------------------------------------------------------------------
-
     def _current(self) -> Token:
         """Return the current token without consuming it."""
         return self.tokens[self.pos]
@@ -93,10 +87,7 @@ class Parser:
         """Return True if the current token's type is in types (no consume)."""
         return self._current().type in types
 
-    # ------------------------------------------------------------------
     # Entry point
-    # ------------------------------------------------------------------
-
     def parse(self) -> ProgramNode:
         """Parse the entire token stream and return the program AST root."""
         statements: List[ASTNode] = []
@@ -108,10 +99,7 @@ class Parser:
         self._expect(TokenType.EOF)
         return ProgramNode(statements)
 
-    # ------------------------------------------------------------------
     # Statement rules
-    # ------------------------------------------------------------------
-
     def _parse_stmt(self) -> ASTNode:
         """
         stmt ::= decl | assign | if_stmt | block
@@ -182,10 +170,7 @@ class Parser:
         self._expect(TokenType.RBRACE)
         return BlockNode(statements, line=lbrace.line)
 
-    # ------------------------------------------------------------------
     # Expression rules (handle operator precedence)
-    # ------------------------------------------------------------------
-
     def _parse_cmp_expr(self) -> ASTNode:
         """cmp_expr ::= expr '>' expr"""
         left = self._parse_expr()

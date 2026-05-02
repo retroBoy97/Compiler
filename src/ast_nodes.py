@@ -1,7 +1,4 @@
 """
-src/ast_nodes.py — Abstract Syntax Tree node definitions
-=========================================================
-
 Every grammar rule that produces a tree node has its own class here.
 All nodes inherit from ASTNode which provides:
   - a .pretty(indent) method for human-readable printing
@@ -40,10 +37,7 @@ class ASTNode:
         return self.pretty()
 
 
-# ---------------------------------------------------------------------------
 # Statement nodes
-# ---------------------------------------------------------------------------
-
 class ProgramNode(ASTNode):
     """Root node. Contains the list of top-level statements."""
 
@@ -138,10 +132,7 @@ class BlockNode(ASTNode):
         return "\n".join(lines)
 
 
-# ---------------------------------------------------------------------------
 # Expression nodes
-# ---------------------------------------------------------------------------
-
 class BinOpNode(ASTNode):
     """
     Binary operation node.
