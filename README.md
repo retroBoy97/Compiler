@@ -61,11 +61,25 @@ uv run python -m unittest discover tests/ -v
 uv run pytest tests/ -v
 ```
 
+## Web UI (Gradio)
+
+Launch the visual pipeline explorer:
+
+```bash
+uv run python ui.py
+# Opens http://127.0.0.1:7860
+```
+
+The UI lets you load a sample (or write your own CL code), then click **Compile**
+to step through Lexer → Parser → Semantic Analyzer in three tabs:
+token table, AST tree view, and symbol table with type/scope diagnostics.
+
 ## Project Structure
 
 ```
 Compiler/
 ├── compiler.py          # CLI entry point — runs all phases
+├── ui.py                # Gradio web UI — visual pipeline explorer
 ├── pyproject.toml       # uv-managed project metadata + dev deps
 ├── uv.lock              # locked dependency versions (committed)
 │

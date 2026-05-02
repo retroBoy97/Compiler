@@ -1,0 +1,253 @@
+/* --------------------------------------------------------------------------
+   CL Compiler — dark theme (Geist).
+
+   Strategy:
+   - Reset every Gradio `.block` wrapper to be transparent (no card).
+   - Apply card-style background/border only on the inner components we
+     actually want to look like cards: the code editor, dropdowns, tables.
+   -------------------------------------------------------------------------- */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&display=swap');
+
+/* === Page foundation === */
+html, body, gradio-app, .gradio-container {
+    background: #000 !important;
+    color: #ededed !important;
+}
+
+.gradio-container {
+    font-family: 'Geist', -apple-system, BlinkMacSystemFont, Arial, sans-serif !important;
+    font-feature-settings: 'liga' 1, 'calt' 1 !important;
+    max-width: 860px !important;
+    margin: 0 auto !important;
+    padding: 80px 24px 96px !important;
+}
+
+.cm-editor, code, pre,
+.gradio-container .dataframe td,
+.gradio-container .dataframe th,
+.gradio-container table td,
+.gradio-container table th {
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace !important;
+    font-feature-settings: 'liga' 1 !important;
+}
+
+/* === Reset block wrappers (Gradio wraps every component in .block) === */
+.gradio-container .block,
+.gradio-container .form,
+.gradio-container .gr-block,
+.gradio-container .gr-form {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+/* === Header === */
+.app-header h1 {
+    font-size: 56px !important;
+    font-weight: 600 !important;
+    letter-spacing: -2.8px !important;
+    line-height: 1.05 !important;
+    text-align: center !important;
+    color: #ededed !important;
+    margin: 0 0 16px 0 !important;
+}
+.app-subtitle, .app-subtitle p {
+    text-align: center !important;
+    color: #a3a3a3 !important;
+    font-size: 17px !important;
+    line-height: 1.6 !important;
+    margin: 0 auto 16px !important;
+    max-width: 560px !important;
+}
+.app-authors, .app-authors p {
+    text-align: center !important;
+    color: #666 !important;
+    font-size: 12px !important;
+    font-family: 'Geist Mono', monospace !important;
+    letter-spacing: 0.04em !important;
+    margin: 0 auto 56px !important;
+}
+
+/* === Phase sections === */
+.phase-section { margin-top: 64px !important; }
+
+.phase-marker p {
+    color: #666 !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.14em !important;
+    font-family: 'Geist Mono', monospace !important;
+    margin: 0 0 8px 0 !important;
+}
+.phase-title h2 {
+    font-size: 32px !important;
+    font-weight: 600 !important;
+    letter-spacing: -1.28px !important;
+    color: #ededed !important;
+    line-height: 1.15 !important;
+    margin: 0 0 12px 0 !important;
+}
+.phase-desc p {
+    color: #a3a3a3 !important;
+    font-size: 15px !important;
+    line-height: 1.6 !important;
+    margin: 0 0 24px 0 !important;
+    max-width: 640px !important;
+}
+
+/* === Status pill row === */
+.status-row {
+    text-align: center !important;
+    padding: 24px 0 8px 0 !important;
+    min-height: 32px !important;
+}
+.status-row p {
+    margin: 0 !important;
+    text-align: center !important;
+    line-height: 2 !important;
+}
+
+/* === Footer === */
+.footer-note p {
+    text-align: center !important;
+    color: #666 !important;
+    font-size: 13px !important;
+    font-family: 'Geist Mono', monospace !important;
+    margin-top: 80px !important;
+}
+
+/* === Labels (above inputs) === */
+.gradio-container .block-label,
+.gradio-container span[data-testid="block-label"],
+.gradio-container .label-wrap > span:first-child,
+.gradio-container label > span:first-child {
+    color: #a3a3a3 !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-family: 'Geist Mono', monospace !important;
+    background: transparent !important;
+    margin-bottom: 8px !important;
+}
+
+/* === Dropdown === */
+.gradio-container .gr-dropdown,
+.gradio-container [data-testid="dropdown"],
+.gradio-container div[role="combobox"],
+.gradio-container .wrap.svelte-1ipelgc {
+    background: #0a0a0a !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 8px !important;
+    transition: border-color 0.15s ease !important;
+}
+.gradio-container [data-testid="dropdown"]:hover { border-color: rgba(255, 255, 255, 0.18) !important; }
+.gradio-container .wrap input,
+.gradio-container [data-testid="dropdown"] input {
+    background: transparent !important;
+    color: #ededed !important;
+    font-family: 'Geist', sans-serif !important;
+    font-size: 14px !important;
+    padding: 10px 14px !important;
+    border: none !important;
+}
+
+/* === Code editor (CodeMirror) === */
+.cm-editor {
+    background: #0a0a0a !important;
+    border: 1px solid rgba(255, 255, 255, 0.10) !important;
+    border-radius: 8px !important;
+    color: #ededed !important;
+    font-size: 14px !important;
+    overflow: hidden !important;
+}
+.cm-editor .cm-content { padding: 16px !important; caret-color: #3b9eff !important; }
+.cm-editor .cm-line { color: #ededed !important; }
+.cm-editor .cm-gutters {
+    background: transparent !important;
+    color: #555 !important;
+    border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+.cm-editor.cm-focused {
+    border-color: rgba(59, 158, 255, 0.5) !important;
+    box-shadow: 0 0 0 4px rgba(59, 158, 255, 0.12) !important;
+    outline: none !important;
+}
+.cm-editor .cm-cursor { border-left-color: #3b9eff !important; }
+.cm-editor .cm-selectionBackground { background: rgba(59, 158, 255, 0.20) !important; }
+.cm-editor .cm-activeLine { background: rgba(255, 255, 255, 0.02) !important; }
+
+/* Hide CodeMirror "no content" placeholder icon */
+.cm-editor .cm-placeholder { color: #444 !important; font-style: normal !important; }
+
+/* === Compile button === */
+.gradio-container button.primary,
+.gradio-container button.lg.primary {
+    background: #ededed !important;
+    color: #000 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Geist', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 15px !important;
+    padding: 14px 24px !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    transition: background 0.15s ease !important;
+    margin-top: 16px !important;
+}
+.gradio-container button.primary:hover { background: #fff !important; }
+.gradio-container button.primary:active { transform: translateY(1px); }
+
+/* === Tables === */
+.gradio-container table,
+.gradio-container .dataframe table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+    background: #0a0a0a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    overflow: hidden !important;
+}
+.gradio-container table th {
+    background: #0f0f0f !important;
+    color: #a3a3a3 !important;
+    font-size: 11px !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    font-family: 'Geist Mono', monospace !important;
+    padding: 12px 16px !important;
+    text-align: left !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-right: none !important;
+}
+.gradio-container table td {
+    color: #ededed !important;
+    background: transparent !important;
+    font-family: 'Geist Mono', monospace !important;
+    font-size: 13px !important;
+    padding: 11px 16px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-right: none !important;
+}
+.gradio-container table tr:last-child td { border-bottom: none !important; }
+.gradio-container table tr:hover td { background: rgba(255, 255, 255, 0.02) !important; }
+
+/* Empty-state placeholder for dataframe */
+.gradio-container .dataframe-wrap > div:empty {
+    min-height: 60px !important;
+}
+
+/* === Hide Gradio chrome we don't want === */
+footer { display: none !important; }
+.gradio-container .show-api,
+.gradio-container .built-with,
+.gradio-container .icon-buttons-vertical { display: none !important; }
+
+/* === Selection === */
+::selection { background: rgba(59, 158, 255, 0.30); color: #fff; }
