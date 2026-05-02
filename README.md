@@ -74,6 +74,26 @@ The UI lets you load a sample (or write your own CL code), then click **Compile*
 to step through Lexer → Parser → Semantic Analyzer in three tabs:
 token table, AST tree view, and symbol table with type/scope diagnostics.
 
+## Deployment (Hugging Face Spaces)
+
+Pushes to `main` deploy the Gradio UI to a Hugging Face Space via
+`.github/workflows/deploy-hf.yml`. The workflow:
+
+1. Generates `requirements.txt` from `pyproject.toml` (via `uv export`).
+2. Replaces `README.md` with `space.md` (which carries the HF Space metadata).
+3. Force-pushes the result to the Space's git remote.
+
+### Required GitHub configuration (one-time setup)
+
+| Type   | Name           | Value                                              |
+|--------|----------------|----------------------------------------------------|
+| Secret | `HF_TOKEN`     | A Hugging Face write token (Settings → Access Tokens) |
+| Var    | `HF_USERNAME`  | Your HF username or org name                       |
+| Var    | `HF_SPACE`     | The Space name (created beforehand on huggingface.co) |
+
+The Space itself must exist before the first deploy. Create it once in the HF UI
+with SDK = Gradio.
+
 ## Project Structure
 
 ```
