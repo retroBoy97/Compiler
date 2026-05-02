@@ -19,14 +19,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-
-      - name: Generate requirements.txt
-        run: uv export --no-dev --no-hashes --format requirements-txt -o requirements.txt
-
       - name: Sync working tree to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -47,7 +39,15 @@ jobs:
           git clone "$SPACE_URL" /tmp/hf-space
 
           # Mirror the current working tree onto the Space (no GitHub git
-          # history → no historical binaries leaking through)
+          # history → no historical binaries leaking through). We exclude:
+          #  - .git/ .github/ .venv/ caches → not needed on the Space
+          #  - tests/ → not needed at runtime
+          #  - *.pdf → HF rejects binaries
+          #  - space.md → promoted to README below
+          #  - space-requirements.txt → promoted to requirements.txt below
+          #  - pyproject.toml / uv.lock → HF uses requirements.txt; the
+          #    transitive pins from `uv export` conflict with HF's
+          #    auto-added gradio[oauth,mcp] extra (mcp pins pydantic<=2.12.5)
           rsync -a --delete \
             --exclude='.git/' \
             --exclude='.github/' \
@@ -58,10 +58,17 @@ jobs:
             --exclude='tests/' \
             --exclude='*.pdf' \
             --exclude='space.md' \
+            --exclude='space-requirements.txt' \
+            --exclude='pyproject.toml' \
+            --exclude='uv.lock' \
             ./ /tmp/hf-space/
 
-          # space.md carries the HF Space YAML metadata — promote it to README
+          # space.md → README.md (carries HF Space YAML metadata)
           cp space.md /tmp/hf-space/README.md
+
+          # space-requirements.txt → requirements.txt (loose top-level deps;
+          # HF's pip resolver fills in compatible transitive versions)
+          cp space-requirements.txt /tmp/hf-space/requirements.txt
 
           cd /tmp/hf-space
           git add -A
