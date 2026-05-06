@@ -28,6 +28,9 @@ class TokenType(Enum):
     IF         = auto()   # 'if'
     THEN       = auto()   # 'then'
     ELSE       = auto()   # 'else'
+    WHILE      = auto()   # 'while'
+    FOR        = auto()   # 'for'
+    TO         = auto()   # 'to' (used by the for-loop range)
 
     # --- Identifier ---
     IDENT      = auto()   # variable names: [a-zA-Z_][a-zA-Z0-9_]*
@@ -36,8 +39,10 @@ class TokenType(Enum):
     PLUS       = auto()   # +
     MINUS      = auto()   # -
     STAR       = auto()   # *
-    EQUALS     = auto()   # =
+    EQUALS     = auto()   # =   (assignment)
+    EQ         = auto()   # ==  (equality test)
     GT         = auto()   # >
+    LT         = auto()   # <
 
     # --- Delimiters ---
     LPAREN     = auto()   # (
@@ -85,6 +90,9 @@ KEYWORDS: dict = {
     "if":     TokenType.IF,
     "then":   TokenType.THEN,
     "else":   TokenType.ELSE,
+    "while":  TokenType.WHILE,
+    "for":    TokenType.FOR,
+    "to":     TokenType.TO,
 }
 
 # Token patterns are tried in order; put longer/more specific patterns first.
@@ -106,12 +114,17 @@ TOKEN_PATTERNS: list = [
     # Identifiers and keywords (keywords are re-classified after match)
     (r"[a-zA-Z_]\w*",      TokenType.IDENT),
 
+    # Multi-character operators (must come before single-character ones
+    # so the longest match wins — '==' before '=').
+    (r"==",   TokenType.EQ),
+
     # Single-character tokens
     (r"\+",   TokenType.PLUS),
     (r"-",    TokenType.MINUS),
     (r"\*",   TokenType.STAR),
     (r"=",    TokenType.EQUALS),
     (r">",    TokenType.GT),
+    (r"<",    TokenType.LT),
     (r"\(",   TokenType.LPAREN),
     (r"\)",   TokenType.RPAREN),
     (r"\{",   TokenType.LBRACE),

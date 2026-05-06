@@ -15,8 +15,11 @@ Node hierarchy:
     ├── DeclNode      — type declaration:  int x;
     ├── AssignNode    — assignment:        x = expr;
     ├── IfNode        — if/then/else
+    ├── WhileNode     — while cond { body }
+    ├── ForNode       — for i = init to limit { body }
     ├── BlockNode     — { stmt* }
     ├── BinOpNode     — expr op expr
+    ├── UnaryOpNode   — op expr  (currently: '-')
     ├── IdentNode     — variable reference
     ├── NumNode       — integer literal
     └── StringNode    — string literal
@@ -117,6 +120,59 @@ class IfNode(ASTNode):
         return "\n".join(lines)
 
 
+class WhileNode(ASTNode):
+    """
+    While loop:  while cond { body }
+    The condition must be a comparison (semantic analyzer enforces this).
+    """
+
+    def __init__(self, condition: ASTNode, body: BlockNode, line: int = 0) -> None:
+        self.condition = condition
+        self.body = body
+        self.line = line
+
+    def pretty(self, indent: int = 0) -> str:
+        pad = "  " * indent
+        lines = [f"{pad}While"]
+        lines.append(f"{pad}  condition:")
+        lines.append(self.condition.pretty(indent + 2))
+        lines.append(f"{pad}  body:")
+        lines.append(self.body.pretty(indent + 2))
+        return "\n".join(lines)
+
+
+class ForNode(ASTNode):
+    """
+    For loop:  for IDENT = init to limit { body }
+    The loop variable must be a previously declared 'int'.
+    """
+
+    def __init__(
+        self,
+        var_name: str,
+        init: ASTNode,
+        limit: ASTNode,
+        body: BlockNode,
+        line: int = 0,
+    ) -> None:
+        self.var_name = var_name
+        self.init = init
+        self.limit = limit
+        self.body = body
+        self.line = line
+
+    def pretty(self, indent: int = 0) -> str:
+        pad = "  " * indent
+        lines = [f"{pad}For({self.var_name})"]
+        lines.append(f"{pad}  init:")
+        lines.append(self.init.pretty(indent + 2))
+        lines.append(f"{pad}  limit:")
+        lines.append(self.limit.pretty(indent + 2))
+        lines.append(f"{pad}  body:")
+        lines.append(self.body.pretty(indent + 2))
+        return "\n".join(lines)
+
+
 class BlockNode(ASTNode):
     """A brace-delimited block: { stmt* }"""
 
@@ -150,6 +206,24 @@ class BinOpNode(ASTNode):
         lines = [f"{pad}BinOp({self.op!r})"]
         lines.append(self.left.pretty(indent + 1))
         lines.append(self.right.pretty(indent + 1))
+        return "\n".join(lines)
+
+
+class UnaryOpNode(ASTNode):
+    """
+    Unary operation node.
+    op is currently always '-'.
+    """
+
+    def __init__(self, op: str, operand: ASTNode, line: int = 0) -> None:
+        self.op = op
+        self.operand = operand
+        self.line = line
+
+    def pretty(self, indent: int = 0) -> str:
+        pad = "  " * indent
+        lines = [f"{pad}UnaryOp({self.op!r})"]
+        lines.append(self.operand.pretty(indent + 1))
         return "\n".join(lines)
 
 

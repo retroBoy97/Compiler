@@ -7,20 +7,24 @@ Every grammar rule is a method. The method either:
 
 Grammar implemented:
     program    ::= stmt* EOF
-    stmt       ::= decl | assign | if_stmt | block
+    stmt       ::= decl | assign | if_stmt | while_stmt | for_stmt | block
     decl       ::= ('int' | 'string') IDENT ';'
     assign     ::= IDENT '=' expr ';'
     if_stmt    ::= 'if' cmp_expr 'then' block ( 'else' block )?
+    while_stmt ::= 'while' cmp_expr block
+    for_stmt   ::= 'for' IDENT '=' expr 'to' expr block
     block      ::= '{' stmt* '}'
-    cmp_expr   ::= expr '>' expr
+    cmp_expr   ::= expr ('>' | '<' | '==') expr     (operator is mandatory)
     expr       ::= term ( ('+' | '-') term )*
     term       ::= factor ( '*' factor )*
-    factor     ::= IDENT | INT_LIT | STRING_LIT | '(' expr ')'
+    factor     ::= '-' factor | atom
+    atom       ::= IDENT | INT_LIT | STRING_LIT | '(' expr ')'
 
 Operator precedence (lowest to highest):
-    >   (comparison)
-    + - (additive)
-    *   (multiplicative)
+    > < ==  (comparison)
+    + -     (additive)
+    *       (multiplicative)
+    unary - (negation)
     atoms (identifiers, literals, parenthesised expressions)
 """
 
@@ -29,7 +33,8 @@ from typing import List, Optional
 from lexer import Token, TokenType
 from ast_nodes import (
     ASTNode, ProgramNode, DeclNode, AssignNode, IfNode,
-    BlockNode, BinOpNode, IdentNode, NumNode, StringNode,
+    WhileNode, ForNode, BlockNode, BinOpNode, UnaryOpNode,
+    IdentNode, NumNode, StringNode,
 )
 
 
@@ -102,11 +107,13 @@ class Parser:
     # Statement rules
     def _parse_stmt(self) -> ASTNode:
         """
-        stmt ::= decl | assign | if_stmt | block
+        stmt ::= decl | assign | if_stmt | while_stmt | for_stmt | block
 
         Dispatch using one token of lookahead:
           - INT / STRING keyword  →  declaration
           - IF keyword            →  if statement
+          - WHILE keyword         →  while statement
+          - FOR keyword           →  for statement
           - LBRACE                →  block
           - IDENT followed by '=' →  assignment
         """
@@ -117,6 +124,12 @@ class Parser:
 
         if tok.type is TokenType.IF:
             return self._parse_if()
+
+        if tok.type is TokenType.WHILE:
+            return self._parse_while()
+
+        if tok.type is TokenType.FOR:
+            return self._parse_for()
 
         if tok.type is TokenType.LBRACE:
             return self._parse_block()
@@ -159,6 +172,32 @@ class Parser:
 
         return IfNode(condition, then_block, else_block, line=if_tok.line)
 
+    def _parse_while(self) -> WhileNode:
+        """while_stmt ::= 'while' cmp_expr block"""
+        while_tok = self._expect(TokenType.WHILE)
+        condition = self._parse_cmp_expr()
+        body = self._parse_block()
+        return WhileNode(condition, body, line=while_tok.line)
+
+    def _parse_for(self) -> ForNode:
+        """
+        for_stmt ::= 'for' IDENT '=' expr 'to' expr block
+
+        The loop variable must already be declared as an int (checked by
+        the semantic analyzer). The body executes with the variable
+        ranging inclusively from init to limit.
+        """
+        for_tok = self._expect(TokenType.FOR)
+        var_tok = self._expect(TokenType.IDENT)
+        self._expect(TokenType.EQUALS)
+        init_expr = self._parse_expr()
+        self._expect(TokenType.TO)
+        limit_expr = self._parse_expr()
+        body = self._parse_block()
+        return ForNode(
+            var_tok.value, init_expr, limit_expr, body, line=for_tok.line
+        )
+
     def _parse_block(self) -> BlockNode:
         """block ::= '{' stmt* '}'"""
         lbrace = self._expect(TokenType.LBRACE)
@@ -172,15 +211,24 @@ class Parser:
 
     # Expression rules (handle operator precedence)
     def _parse_cmp_expr(self) -> ASTNode:
-        """cmp_expr ::= expr '>' expr"""
+        """
+        cmp_expr ::= expr ('>' | '<' | '==') expr
+
+        The comparison operator is mandatory: 'if'/'while' conditions
+        must be a real comparison, not a bare expression.
+        """
         left = self._parse_expr()
 
-        if self._match(TokenType.GT):
+        if self._match(TokenType.GT, TokenType.LT, TokenType.EQ):
             op_tok = self._advance()
             right = self._parse_expr()
-            return BinOpNode(">", left, right, line=op_tok.line)
+            return BinOpNode(op_tok.value, left, right, line=op_tok.line)
 
-        return left
+        tok = self._current()
+        raise ParseError(
+            f"Expected comparison operator ('>', '<', or '==') but found "
+            f"{tok.type.name} ({tok.value!r}) at line {tok.line}, col {tok.col}"
+        )
 
     def _parse_expr(self) -> ASTNode:
         """expr ::= term ( ('+' | '-') term )*"""
@@ -205,8 +253,19 @@ class Parser:
         return node
 
     def _parse_factor(self) -> ASTNode:
-        """factor ::= IDENT | INT_LIT | STRING_LIT | '(' expr ')'"""
+        """
+        factor ::= '-' factor | atom
+        atom   ::= IDENT | INT_LIT | STRING_LIT | '(' expr ')'
+
+        Unary minus is right-associative, so '--x' parses as '-(-x)'.
+        """
         tok = self._current()
+
+        # Unary minus (highest precedence except for atoms themselves).
+        if tok.type is TokenType.MINUS:
+            self._advance()
+            operand = self._parse_factor()
+            return UnaryOpNode("-", operand, line=tok.line)
 
         if tok.type is TokenType.IDENT:
             self._advance()

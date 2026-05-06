@@ -20,8 +20,13 @@ Usage:
 
 from ast_nodes import (
     ASTNode, ProgramNode, DeclNode, AssignNode, IfNode,
-    BlockNode, BinOpNode, IdentNode, NumNode, StringNode,
+    WhileNode, ForNode, BlockNode, BinOpNode, UnaryOpNode,
+    IdentNode, NumNode, StringNode,
 )
+
+
+# Operators that produce a boolean-style result usable as a condition.
+_COMPARISON_OPS = frozenset({">", "<", "=="})
 
 
 class SemanticError(Exception):
@@ -135,11 +140,64 @@ class SemanticAnalyzer:
             )
 
     def _visit_IfNode(self, node: IfNode) -> None:
-        """Check the condition, then analyse both branches."""
-        self._visit(node.condition)       # condition type is not strictly checked
+        """
+        Enforce that the condition is a comparison expression, then
+        type-check the comparison and analyse both branches.
+        """
+        self._check_condition(node.condition, "if", node.line)
+        self._visit(node.condition)
         self._visit(node.then_block)
         if node.else_block:
             self._visit(node.else_block)
+
+    def _visit_WhileNode(self, node: WhileNode) -> None:
+        """Same condition rules as 'if', plus the body."""
+        self._check_condition(node.condition, "while", node.line)
+        self._visit(node.condition)
+        self._visit(node.body)
+
+    def _visit_ForNode(self, node: ForNode) -> None:
+        """
+        For-loop checks:
+          - The loop variable must be already declared as 'int'.
+          - The init and limit expressions must be 'int'.
+          - The body is analysed in its own (block) scope.
+        """
+        var_type = self.global_scope.lookup(node.var_name, line=node.line)
+        if var_type != "int":
+            raise SemanticError(
+                f"For-loop variable '{node.var_name}' must be 'int', "
+                f"got '{var_type}' (line {node.line})"
+            )
+
+        init_type = self._visit(node.init)
+        if init_type != "int":
+            raise SemanticError(
+                f"For-loop init expression must be 'int', "
+                f"got '{init_type}' (line {node.line})"
+            )
+
+        limit_type = self._visit(node.limit)
+        if limit_type != "int":
+            raise SemanticError(
+                f"For-loop limit expression must be 'int', "
+                f"got '{limit_type}' (line {node.line})"
+            )
+
+        self._visit(node.body)
+
+    def _check_condition(self, cond: ASTNode, context: str, line: int) -> None:
+        """
+        Enforce that 'if' / 'while' conditions are real comparisons.
+        Without this check, code like  if "hello" then { ... }  would
+        silently pass semantic analysis.
+        """
+        if not (isinstance(cond, BinOpNode) and cond.op in _COMPARISON_OPS):
+            raise SemanticError(
+                f"'{context}' condition must be a comparison "
+                f"('>', '<', or '=='), got non-comparison expression "
+                f"(line {line})"
+            )
 
     def _visit_BlockNode(self, node: BlockNode) -> None:
         """Push a new scope for the block, then visit all statements."""
@@ -166,7 +224,10 @@ class SemanticAnalyzer:
         Rules:
           - Arithmetic (+, -, *): both operands must be 'int'.
           - String concatenation (+): both operands must be 'string'.
-          - Comparison (>): both operands must be 'int'.
+          - Ordered comparison (>, <): both operands must be 'int'.
+          - Equality (==): both operands must be the same type
+            (int == int  or  string == string).
+          - All comparisons return 'int' (treating boolean as int).
         """
         left_type = self._visit(node.left)
         right_type = self._visit(node.right)
@@ -188,12 +249,36 @@ class SemanticAnalyzer:
                 )
             return "int"
 
-        if node.op == ">":
+        if node.op in (">", "<"):
             if left_type != "int" or right_type != "int":
                 raise SemanticError(
-                    f"Operator '>' requires both operands to be 'int', "
+                    f"Operator '{node.op}' requires both operands to be 'int', "
                     f"but got '{left_type}' and '{right_type}' (line {node.line})"
                 )
-            return "int"   # result of comparison is treated as int (boolean)
+            return "int"
+
+        if node.op == "==":
+            if left_type != right_type:
+                raise SemanticError(
+                    f"Operator '==' requires both operands to be the same type, "
+                    f"but got '{left_type}' and '{right_type}' (line {node.line})"
+                )
+            return "int"
 
         raise SemanticError(f"Unknown operator '{node.op}' (line {node.line})")
+
+    def _visit_UnaryOpNode(self, node: UnaryOpNode) -> str:
+        """Unary minus requires an 'int' operand and returns 'int'."""
+        operand_type = self._visit(node.operand)
+
+        if node.op == "-":
+            if operand_type != "int":
+                raise SemanticError(
+                    f"Unary '-' requires an 'int' operand, "
+                    f"got '{operand_type}' (line {node.line})"
+                )
+            return "int"
+
+        raise SemanticError(
+            f"Unknown unary operator '{node.op}' (line {node.line})"
+        )
