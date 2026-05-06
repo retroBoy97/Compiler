@@ -17,6 +17,68 @@ DEFAULT_SAMPLE = "hello" if "hello" in SAMPLES else next(iter(SAMPLES), "")
 DEFAULT_CODE = SAMPLES.get(DEFAULT_SAMPLE, "int x;\nx = 5;\nx = x + 2;\n")
 
 
+# Loads mermaid.js once and renders any <pre class="mermaid"> that appears
+# in the DOM (including blocks that Gradio injects after a Compile click).
+_MERMAID_HEAD = """
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  var initialized = false;
+  var pending = null;
+
+  function init() {
+    if (initialized || !window.mermaid) return;
+    window.mermaid.initialize({
+      startOnLoad: false,
+      theme: 'base',
+      themeVariables: {
+        background: '#0a0a0a',
+        primaryColor: '#0a0a0a',
+        primaryTextColor: '#ededed',
+        primaryBorderColor: '#3b9eff',
+        lineColor: 'rgba(255,255,255,0.35)',
+        textColor: '#ededed',
+        mainBkg: '#0a0a0a',
+        fontFamily: 'Geist Mono, ui-monospace, monospace',
+        fontSize: '13px'
+      },
+      flowchart: { curve: 'basis', padding: 12, nodeSpacing: 28, rankSpacing: 38 }
+    });
+    initialized = true;
+  }
+
+  function render() {
+    if (!window.mermaid) return;
+    init();
+    var nodes = document.querySelectorAll('pre.mermaid:not([data-processed="true"])');
+    if (nodes.length === 0) return;
+    try { window.mermaid.run({ nodes: nodes }); }
+    catch (e) { console.error('mermaid render failed:', e); }
+  }
+
+  function schedule() {
+    if (pending) return;
+    pending = setTimeout(function () { pending = null; render(); }, 80);
+  }
+
+  function setup() {
+    if (!window.mermaid) { setTimeout(setup, 100); return; }
+    render();
+    new MutationObserver(schedule).observe(
+      document.body, { childList: true, subtree: true }
+    );
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setup);
+  } else {
+    setup();
+  }
+})();
+</script>
+"""
+
+
 def load_css() -> str:
     return (Path(__file__).parent / "styles.css").read_text(encoding="utf-8")
 
@@ -26,7 +88,7 @@ def _load_sample(name: str) -> str:
 
 
 def build_demo() -> gr.Blocks:
-    with gr.Blocks(title="CL Compiler — Visualizer") as demo:
+    with gr.Blocks(title="CL Compiler — Visualizer", head=_MERMAID_HEAD) as demo:
         # --- Header --------------------------------------------------------
         gr.Markdown("# CL Compiler", elem_classes="app-header")
         gr.Markdown(
@@ -84,11 +146,9 @@ def build_demo() -> gr.Blocks:
                 "tree of nodes. Indentation reflects parent → child relationships.",
                 elem_classes="phase-desc",
             )
-            ast_view = gr.Code(
-                label="AST",
-                lines=20,
-                interactive=False,
-                show_label=False,
+            ast_view = gr.HTML(
+                value='<div class="ast-mermaid-empty">Click Compile to see the syntax tree.</div>',
+                elem_classes="ast-view",
             )
 
         # --- Phase 3: Semantic --------------------------------------------

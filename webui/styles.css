@@ -268,5 +268,64 @@ footer { display: none !important; }
 .gradio-container .built-with,
 .gradio-container .icon-buttons-vertical { display: none !important; }
 
+/* === AST mermaid graph view === */
+.ast-view { width: 100% !important; }
+
+.ast-mermaid {
+    background: #0a0a0a !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 8px !important;
+    padding: 24px 16px !important;
+    overflow: auto !important;
+    max-height: 720px !important;
+    text-align: center;
+}
+
+/* The raw mermaid source is replaced with an SVG by mermaid.js.
+   Hide the source while it's still pre-render so the user doesn't
+   see the dot-syntax flash. */
+.ast-mermaid pre.mermaid {
+    background: transparent !important;
+    color: transparent !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    font-family: 'Geist Mono', monospace !important;
+    font-size: 12px !important;
+    text-align: center;
+    min-height: 60px;
+}
+.ast-mermaid pre.mermaid[data-processed="true"] {
+    color: inherit !important;
+}
+
+.ast-mermaid svg {
+    background: transparent !important;
+    max-width: 100% !important;
+    height: auto !important;
+    display: inline-block;
+}
+
+/* Edge labels (condition / then / else / init / limit / body) */
+.ast-mermaid .edgeLabel {
+    background: #0a0a0a !important;
+    color: #ff9659 !important;
+    font-family: 'Geist Mono', monospace !important;
+    font-size: 11px !important;
+    padding: 2px 6px !important;
+}
+.ast-mermaid .edgeLabel rect { fill: #0a0a0a !important; }
+
+/* Empty / placeholder state (no AST yet) */
+.ast-mermaid-empty {
+    background: #0a0a0a !important;
+    border: 1px dashed rgba(255, 255, 255, 0.12) !important;
+    border-radius: 8px !important;
+    padding: 60px 16px !important;
+    color: #555 !important;
+    font-family: 'Geist Mono', monospace !important;
+    font-size: 13px !important;
+    text-align: center !important;
+}
+
 /* === Selection === */
 ::selection { background: rgba(59, 158, 255, 0.30); color: #fff; }
